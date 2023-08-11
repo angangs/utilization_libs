@@ -1,0 +1,56 @@
+version: "3.7"
+
+networks:
+  local_net:
+    name: local_net
+    driver: bridge
+
+services:
+  solver:
+    build:
+      dockerfile: solver/Dockerfile
+      context: .
+    image: solver:0.1
+    container_name: solver
+    networks:
+      - local_net
+    expose:
+      - 5000
+    volumes:
+      - ./src/solver:/app/src/solver
+      - ./data/opap:/app/data/opap
+    command: "bash /app/src/solver/run.sh"
+
+  ui-dash:
+    build:
+      dockerfile: ui-dash/Dockerfile
+      context: .
+    image: ui-dash:0.1
+    container_name: ui-dash
+    networks:
+      - local_net
+    expose:
+      - 8050
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./src/ui-dash:/app/src/ui
+      - ./data/opap:/app/data/opap
+    command: "bash -c 'cd /app/src/ui && python app.py'"
+  
+  ui-bokeh:
+    build:
+      dockerfile: ui-bokeh/Dockerfile
+      context: .
+    image: ui-bokeh:0.1
+    container_name: ui-bokeh
+    networks:
+      - local_net
+    expose:
+      - 5006
+    ports:
+      - "5006:5006"
+    volumes:
+      - ./src/ui-bokeh:/app/src/ui
+      - ./data/opap:/app/src/ui/static/data
+    command: "bash -c 'cd /app/src && bokeh serve ui --allow-websocket-origin='*' --dev'"

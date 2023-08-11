@@ -1,0 +1,26 @@
+version: "3"
+
+networks:
+  local_net:
+    name: local_net
+    driver: bridge
+
+services:
+  ccap-service:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: ccap-service:0.1
+    container_name: ccap-service
+    networks:
+      - local_net
+    expose:
+      - 5000
+    ports:
+      - 5001:5000
+    volumes:
+      - .:/app
+    env_file:
+      - secrets.env
+    command: "bash -c 'cd /app/azure_functions_local_execution_v3/service && export FLASK_APP=controller.py && flask run --host=0.0.0.0 --port=5000'"
+    restart: on-failure
